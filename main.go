@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"log"
-)
-
 type Doc struct {
 	ID   int32
 	Data map[string]interface{}
@@ -68,7 +63,7 @@ func (ri *RevertIndex) Index(doc *Doc) error {
 	for f, v := range doc.Data {
 		field, ok := ri.Data[f]
 		if !ok {
-			ri.Data[f] = map[interface{}][]int32{v: []int32{doc.ID}}
+			ri.Data[f] = map[interface{}][]int32{v: {doc.ID}}
 		} else {
 			_, ok := field[v]
 			if !ok {
@@ -83,37 +78,5 @@ func (ri *RevertIndex) Index(doc *Doc) error {
 }
 
 func main() {
-	ri := NewRI()
 
-	ri.Index(&Doc{
-		ID: 1,
-		Data: map[string]interface{}{
-			"geo": "BJ",
-			"age": 18,
-		},
-	})
-
-	ri.Index(&Doc{
-		ID: 2,
-		Data: map[string]interface{}{
-			"geo": "SH",
-			"age": 20,
-		},
-	})
-
-	ri.Index(&Doc{
-		ID: 3,
-		Data: map[string]interface{}{
-			"geo":    "BJ",
-			"age":    20,
-			"gender": "F",
-		},
-	})
-
-	docIDs, err := ri.MultiQuery(Eq("geo", "BJ"), Eq("age", 20))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(docIDs)
 }
