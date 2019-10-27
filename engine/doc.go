@@ -1,4 +1,4 @@
-package main
+package engine
 
 type Doc struct {
 	ID   int32

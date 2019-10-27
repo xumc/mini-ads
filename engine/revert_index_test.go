@@ -1,16 +1,11 @@
-package main
+package engine
 
 import (
 	"github.com/stretchr/testify/assert"
 	"log"
+	"os"
 	"testing"
 )
-
-func Test_TrieDic_1(t *testing.T) {
-	tt := NewTrieDic()
-	tt.Add("ZH-BJ", 11111)
-	assert.Equal(t, 11111, tt.Get("ZH-BJ"))
-}
 
 func Test_Normal_1(t *testing.T) {
 	schema := Schema{
@@ -59,6 +54,14 @@ func Test_Normal_1(t *testing.T) {
 			"age": 20,
 		},
 	})
+
+	p := NewPusher(ri)
+	os.Remove("data")
+	p.WriteToFile("data")
+
+	ri = NewRI(schema)
+	err := ri.ReLoadFromFile("data")
+	assert.Nil(t, err)
 
 	docIDs, err := ri.MultiQuery(Eq("geo", "ZH-BJ"), Eq("age", 20))
 	if err != nil {
