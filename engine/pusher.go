@@ -123,7 +123,7 @@ func (p *pusher) savePostingList(positings []int32) (int64, error) {
 	bytes := make([]byte, 0, 4+count)
 	bytes = append(bytes, Uint32ToBytes(uint32(count))...)
 	for _, docID := range positings {
-		bytes = append(bytes, Uint32ToBytes(uint32(docID))...)
+		bytes = append(bytes, Int32ToBytes(int32(docID))...)
 	}
 	_, err = p.dataFile.Write(bytes)
 	if err != nil {
