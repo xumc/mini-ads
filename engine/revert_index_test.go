@@ -56,7 +56,7 @@ func Test_Normal_1(t *testing.T) {
 	})
 
 	p := NewPusher(ri)
-	os.Remove("data")
+	defer os.Remove("data")
 	p.WriteToFile("data")
 
 	ri = NewRI(schema)
