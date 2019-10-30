@@ -23,7 +23,11 @@ func NewHashDic() Dic {
 }
 
 func (hd *hashDic) Get(key interface{}) *skiplist.Set {
-	return hd.data[key]
+	sl, ok := hd.data[key]
+	if !ok {
+		return newDocIDSkipList()
+	}
+	return sl
 }
 
 func (hd *hashDic) Add(key interface{}, value DocID) {

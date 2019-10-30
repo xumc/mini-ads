@@ -18,7 +18,7 @@ func StartWith(field string, key interface{}) Query {
 	return func(ri *RevertIndex) (*skiplist.Set, error) {
 		switch vv := ri.GetDic(field).(type) {
 		case *hashDic:
-			return nil, errors.New("unsuport startWith Query in hash type field.")
+			return nil, errors.New("unsuport startWith query in hash type field.")
 		case *trieDic:
 			retDocIDs := newDocIDSkipList()
 			vv.data.Root().WalkPrefix([]byte(key.(string)), func(kkk []byte, vvv interface{}) bool {

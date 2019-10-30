@@ -47,7 +47,7 @@ func (ri *RevertIndex) MultiQuery(qs ...Query) ([]DocID, error) {
 	var mergedDocIDs = newDocIDSkipList()
 
 	for i, q := range qs {
-		slDocIDs, err := ri.Query(q)
+		slDocIDs, err := ri.query(q)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func (ri *RevertIndex) MultiQuery(qs ...Query) ([]DocID, error) {
 	return docIDs, nil
 }
 
-func (ri *RevertIndex) Query(q Query) (*skiplist.Set, error) {
+func (ri *RevertIndex) query(q Query) (*skiplist.Set, error) {
 	sl, err := q(ri)
 	if err != nil {
 		return nil, err
