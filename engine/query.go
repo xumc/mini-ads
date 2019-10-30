@@ -20,7 +20,7 @@ func StartWith(field string, key interface{}) Query {
 		case *hashDic:
 			return nil, errors.New("unsuport startWith Query in hash type field.")
 		case *trieDic:
-			retDocIDs := newDocIDSkiplist()
+			retDocIDs := newDocIDSkipList()
 			vv.data.Root().WalkPrefix([]byte(key.(string)), func(kkk []byte, vvv interface{}) bool {
 				sl := vvv.(*skiplist.Set)
 				unboundIterator := sl.Iterator()

@@ -29,7 +29,7 @@ func (hd *hashDic) Get(key interface{}) *skiplist.Set {
 func (hd *hashDic) Add(key interface{}, value DocID) {
 	_, ok := hd.data[key]
 	if !ok {
-		hd.data[key] = newDocIDSkiplist()
+		hd.data[key] = newDocIDSkipList()
 	}
 
 	hd.data[key].Add(value)
@@ -70,7 +70,7 @@ func NewTrieDic() Dic {
 func (td *trieDic) Get(key interface{}) *skiplist.Set {
 	ps, ok := td.data.Get([]byte(key.(string)))
 	if !ok {
-		return newDocIDSkiplist()
+		return newDocIDSkipList()
 	}
 	return ps.(*skiplist.Set)
 }
@@ -97,10 +97,4 @@ func (td *trieDic) Range(fn func(k interface{}, postingList *skiplist.Set) error
 	}
 
 	return nil
-}
-
-func newDocIDSkiplist() *skiplist.Set {
-	return skiplist.NewCustomSet(func(l, r interface{}) bool {
-		return int32(l.(DocID)) < int32(r.(DocID))
-	})
 }

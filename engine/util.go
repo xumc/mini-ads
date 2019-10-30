@@ -5,19 +5,6 @@ import (
 	"encoding/binary"
 )
 
-func intersectInt32Slice(a []DocID, b []DocID) []DocID {
-	retSlice := make([]DocID, 0)
-	for i := range a {
-		for j := range b {
-			if a[i] == b[j] {
-				retSlice = append(retSlice, a[i])
-			}
-		}
-	}
-
-	return retSlice
-}
-
 func Uint32ToBytes(n uint32) []byte {
 	x := uint32(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})

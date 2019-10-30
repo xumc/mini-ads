@@ -44,38 +44,39 @@ func (ri *RevertIndex) AddForField(field string) Dic {
 }
 
 func (ri *RevertIndex) MultiQuery(qs ...Query) ([]DocID, error) {
-	var mergeDocIDs []DocID
+	var mergedDocIDs = newDocIDSkipList()
 
-	for _, q := range qs {
-		docIDs, err := ri.Query(q)
+	for i, q := range qs {
+		slDocIDs, err := ri.Query(q)
 		if err != nil {
 			return nil, err
 		}
 
-		if mergeDocIDs == nil {
-			mergeDocIDs = docIDs
+		if i == 0 {
+			mergedDocIDs = slDocIDs
 		} else {
-			mergeDocIDs = intersectInt32Slice(mergeDocIDs, docIDs)
+			mergedDocIDs = intersectSkipList(mergedDocIDs, slDocIDs)
+			if mergedDocIDs.Len() == 0 {
+				return []DocID{}, nil
+			}
 		}
 	}
 
-	return mergeDocIDs, nil
+	docIDs := make([]DocID, 0, mergedDocIDs.Len())
+	iter := mergedDocIDs.Iterator()
+	for iter.Next() {
+		docIDs = append(docIDs, iter.Key().(DocID))
+	}
+	return docIDs, nil
 }
 
-func (ri *RevertIndex) Query(q Query) ([]DocID, error) {
+func (ri *RevertIndex) Query(q Query) (*skiplist.Set, error) {
 	sl, err := q(ri)
 	if err != nil {
 		return nil, err
 	}
 
-	retDocIDs := make([]DocID, 0, sl.Len())
-
-	unboundIterator := sl.Iterator()
-	for unboundIterator.Next() {
-		retDocIDs = append(retDocIDs, unboundIterator.Key().(DocID))
-	}
-
-	return retDocIDs, nil
+	return sl, nil
 }
 
 func (ri *RevertIndex) Index(doc *Doc) error {
@@ -292,7 +293,7 @@ func (ri *RevertIndex) readPositingList(file *os.File, psOffset int64) (*skiplis
 		return nil, err
 	}
 
-	positingList := newDocIDSkiplist()
+	positingList := newDocIDSkipList()
 	for i := 0; i < int(count); i++ {
 		docID := DocID(BytesToInt32(positingListBytes[(i * 4):((i + 1) * 4) ]))
 		positingList.Add(docID)
