@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"github.com/ryszard/goskiplist/skiplist"
 	"io"
 	"os"
 )
@@ -42,8 +43,8 @@ func (ri *RevertIndex) AddForField(field string) Dic {
 	return fs
 }
 
-func (ri *RevertIndex) MultiQuery(qs ...Query) ([]int32, error) {
-	var mergeDocIDs []int32
+func (ri *RevertIndex) MultiQuery(qs ...Query) ([]DocID, error) {
+	var mergeDocIDs []DocID
 
 	for _, q := range qs {
 		docIDs, err := ri.Query(q)
@@ -61,8 +62,20 @@ func (ri *RevertIndex) MultiQuery(qs ...Query) ([]int32, error) {
 	return mergeDocIDs, nil
 }
 
-func (ri *RevertIndex) Query(q Query) ([]int32, error) {
-	return q(ri)
+func (ri *RevertIndex) Query(q Query) ([]DocID, error) {
+	sl, err := q(ri)
+	if err != nil {
+		return nil, err
+	}
+
+	retDocIDs := make([]DocID, 0, sl.Len())
+
+	unboundIterator := sl.Iterator()
+	for unboundIterator.Next() {
+		retDocIDs = append(retDocIDs, unboundIterator.Key().(DocID))
+	}
+
+	return retDocIDs, nil
 }
 
 func (ri *RevertIndex) Index(doc *Doc) error {
@@ -263,7 +276,7 @@ func (ri *RevertIndex) readDic(file *os.File, field string, dicOffset int64) (Di
 	return dic, nil
 }
 
-func (ri *RevertIndex) readPositingList(file *os.File, psOffset int64) ([]int32, error) {
+func (ri *RevertIndex) readPositingList(file *os.File, psOffset int64) (*skiplist.Set, error) {
 	file.Seek(psOffset, 0)
 
 	countBytes := make([]byte, 4)
@@ -279,10 +292,10 @@ func (ri *RevertIndex) readPositingList(file *os.File, psOffset int64) ([]int32,
 		return nil, err
 	}
 
-	positingList := make([]int32, count)
+	positingList := newDocIDSkiplist()
 	for i := 0; i < int(count); i++ {
-		docID := BytesToInt32(positingListBytes[(i * 4):((i + 1) * 4) ])
-		positingList[i] = docID
+		docID := DocID(BytesToInt32(positingListBytes[(i * 4):((i + 1) * 4) ]))
+		positingList.Add(docID)
 	}
 
 	return positingList, nil

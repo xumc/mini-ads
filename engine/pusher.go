@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ryszard/goskiplist/skiplist"
 	"io"
 	"os"
 )
@@ -23,7 +24,7 @@ func NewPusher(ri *RevertIndex) *pusher {
 func (p *pusher) WriteTo(w io.Writer) (int, error) {
 	dicPostingListOffsetMap := make(map[string]map[interface{}]int64)
 	for f, dic := range p.ri.dics {
-		err := dic.Range(func(k interface{}, postingList []int32) error {
+		err := dic.Range(func(k interface{}, postingList *skiplist.Set) error {
 			offset, err := p.savePostingList(postingList)
 			if err != nil {
 				return err
@@ -111,7 +112,7 @@ func (p *pusher) WriteToFile(filepath string) error {
 	return err
 }
 
-func (p *pusher) savePostingList(positings []int32) (int64, error) {
+func (p *pusher) savePostingList(positings *skiplist.Set) (int64, error) {
 	info, err := p.dataFile.Stat()
 	if err != nil {
 		return 0, err
@@ -119,12 +120,16 @@ func (p *pusher) savePostingList(positings []int32) (int64, error) {
 
 	offset := info.Size()
 
-	count := len(positings)
+	count := positings.Len()
 	bytes := make([]byte, 0, 4+count)
 	bytes = append(bytes, Uint32ToBytes(uint32(count))...)
-	for _, docID := range positings {
+
+	unboundIterator := positings.Iterator()
+	for unboundIterator.Next() {
+		docID := unboundIterator.Key().(DocID)
 		bytes = append(bytes, Int32ToBytes(int32(docID))...)
 	}
+
 	_, err = p.dataFile.Write(bytes)
 	if err != nil {
 		return 0, err

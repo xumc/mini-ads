@@ -1,6 +1,8 @@
 package engine
 
+type DocID int32
+
 type Doc struct {
-	ID   int32
+	ID   DocID
 	Data map[string]interface{}
 }

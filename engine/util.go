@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 )
 
-func intersectInt32Slice(a []int32, b []int32) []int32 {
-	retSlice := make([]int32, 0)
+func intersectInt32Slice(a []DocID, b []DocID) []DocID {
+	retSlice := make([]DocID, 0)
 	for i := range a {
 		for j := range b {
 			if a[i] == b[j] {

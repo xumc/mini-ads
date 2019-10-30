@@ -1,25 +1,32 @@
 package engine
 
-import "errors"
+import (
+	"errors"
+	"github.com/ryszard/goskiplist/skiplist"
+)
 
-type Query func(ri *RevertIndex) ([]int32, error)
+type Query func(ri *RevertIndex) (*skiplist.Set, error)
 
 func Eq(field string, key interface{}) Query {
-	return func(ri *RevertIndex) ([]int32, error) {
+	return func(ri *RevertIndex) (*skiplist.Set, error) {
 		r := ri.GetDic(field).Get(key)
 		return r, nil
 	}
 }
 
 func StartWith(field string, key interface{}) Query {
-	return func(ri *RevertIndex) ([]int32, error) {
+	return func(ri *RevertIndex) (*skiplist.Set, error) {
 		switch vv := ri.GetDic(field).(type) {
 		case *hashDic:
 			return nil, errors.New("unsuport startWith Query in hash type field.")
 		case *trieDic:
-			retDocIDs := make([]int32, 0)
+			retDocIDs := newDocIDSkiplist()
 			vv.data.Root().WalkPrefix([]byte(key.(string)), func(kkk []byte, vvv interface{}) bool {
-				retDocIDs = append(retDocIDs, vvv.([]int32)...)
+				sl := vvv.(*skiplist.Set)
+				unboundIterator := sl.Iterator()
+				for unboundIterator.Next() {
+					retDocIDs.Add(unboundIterator.Key())
+				}
 				return false
 			})
 			return retDocIDs, nil

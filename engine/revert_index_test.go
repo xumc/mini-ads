@@ -24,7 +24,7 @@ func Test_Normal_1(t *testing.T) {
 	ri := NewRI(schema)
 
 	ri.Index(&Doc{
-		ID: 1,
+		ID: DocID(1),
 		Data: map[string]interface{}{
 			"geo": "ZH-BJ",
 			"age": 18,
@@ -32,7 +32,7 @@ func Test_Normal_1(t *testing.T) {
 	})
 
 	ri.Index(&Doc{
-		ID: 2,
+		ID: DocID(2),
 		Data: map[string]interface{}{
 			"geo": "ZH-SH",
 			"age": 20,
@@ -40,7 +40,7 @@ func Test_Normal_1(t *testing.T) {
 	})
 
 	ri.Index(&Doc{
-		ID: 3,
+		ID: DocID(3),
 		Data: map[string]interface{}{
 			"geo": "ZH-BJ",
 			"age": 20,
@@ -48,7 +48,7 @@ func Test_Normal_1(t *testing.T) {
 	})
 
 	ri.Index(&Doc{
-		ID: 4,
+		ID: DocID(4),
 		Data: map[string]interface{}{
 			"geo": "US-NYC",
 			"age": 20,
@@ -69,12 +69,12 @@ func Test_Normal_1(t *testing.T) {
 	}
 
 	assert.Len(t, docIDs, 1)
-	assert.Equal(t, int32(3), docIDs[0])
+	assert.Equal(t, DocID(3), docIDs[0])
 
 	docIDs, err = ri.MultiQuery(StartWith("geo", "ZH"), Eq("age", 20))
 	if err != nil {
 		log.Fatal(err)
 	}
 	assert.Len(t, docIDs, 2)
-	assert.Equal(t, []int32{3, 2,}, docIDs)
+	assert.Equal(t, []DocID{2, 3,}, docIDs)
 }
