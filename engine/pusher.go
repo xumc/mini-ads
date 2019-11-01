@@ -2,7 +2,6 @@ package engine
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/ryszard/goskiplist/skiplist"
 	"io"
 	"os"
@@ -56,13 +55,18 @@ func (p *pusher) WriteTo(w io.Writer) (int, error) {
 		return 0, err
 	}
 
-	fmt.Println("dicsDataOffset: ", dicsDataOffset)
-
 	fieldMapOffset, err := p.saveFieldMap()
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println("fieldMapOffset: ", fieldMapOffset)
+
+	err = p.saveMetadata(&Metadata{
+		DicsOffset:     dicsDataOffset,
+		FieldMapOffset: fieldMapOffset,
+	})
+	if err != nil {
+		return 0, err
+	}
 
 	return 0, nil
 }
@@ -199,4 +203,13 @@ func (p *pusher) saveDicsData(fieldDics map[string]int64) (int64, error) {
 	}
 
 	return retOffset, nil
+}
+
+func (p *pusher) saveMetadata(md *Metadata) error {
+	_, err := p.dataFile.Write(md.toBytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -78,8 +78,8 @@ func Test_Normal_1(t *testing.T) {
 	assert.Len(t, docIDs, 2)
 	assert.Equal(t, []DocID{2, 3,}, docIDs)
 
-	_, err = ri.MultiQuery(Eq("geo", "ZH-BJ"), Eq("age", 10))
-	if err != nil {
-		log.Fatal(err)
-	}
+	docIDs, err = ri.MultiQuery(Eq("geo", "ZH-BJ"), Eq("age", 10))
+	assert.Nil(t, err)
+	assert.Len(t, docIDs, 0)
+
 }

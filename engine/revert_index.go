@@ -5,6 +5,7 @@ import (
 	"github.com/ryszard/goskiplist/skiplist"
 	"io"
 	"os"
+	"unsafe"
 )
 
 type RevertIndex struct {
@@ -93,19 +94,40 @@ func (ri *RevertIndex) ReLoadFromFile(filepath string) error {
 	}
 	defer file.Close()
 
-	fieldMapOffset := int64(214)
+	md, err := ri.readMetadata(file)
+	if err != nil {
+		return err
+	}
+	fieldMapOffset := md.FieldMapOffset
+	dicsOffset := md.DicsOffset
+
 	err = ri.readFieldMap(file, fieldMapOffset)
 	if err != nil {
 		return err
 	}
 
-	dicsOffset := int64(172)
 	err = ri.readDics(file, dicsOffset)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (ri *RevertIndex) readMetadata(file *os.File) (*Metadata, error) {
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	mdSize := int64(unsafe.Sizeof(Metadata{}))
+	mdOffset := info.Size() - mdSize
+	mdBytes := make([]byte, mdSize)
+	_, err = file.ReadAt(mdBytes, mdOffset)
+	if err != nil {
+		return nil, err
+	}
+	md := NewMetadataFromBytes(mdBytes)
+	return md, nil
 }
 
 func (ri *RevertIndex) readFieldMap(file *os.File, fieldMapOffset int64) error {
