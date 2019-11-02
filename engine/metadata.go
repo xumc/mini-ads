@@ -8,7 +8,6 @@ type Metadata struct {
 	DicsOffset     int64
 	FieldMapOffset int64
 	DocsOffset     int64
-	ptr            uintptr
 }
 
 // maxAllocSize is the size used when creating array pointers.
